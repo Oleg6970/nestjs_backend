@@ -14,12 +14,14 @@ export class AuthService {
     private readonly tokenService: TokenService
     ) {}
 
-  async registerUsers (dto: CreateUserDto): Promise<CreateUserDto> {
+  async registerUsers (dto: CreateUserDto): Promise<AuthUserResponse> {
     try {
       const existUser = await this.userService.findUserByEmail(dto.email)
       if(existUser) throw new BadRequestException(AppError.USER_EXIST)
 
-      return this.userService.createUser(dto)
+      await this.userService.createUser(dto)
+
+      return  await this.userService.publicUser(dto.email)
     } catch (e) {
       throw new Error(e)
     }
@@ -37,10 +39,8 @@ export class AuthService {
       //   email: existUser.email
       // }
 
-      const user = await this.userService.publicUser(dto.email)
-      const token = await this.tokenService.generateJwtToken(user)
+      return  this.userService.publicUser(dto.email)
 
-      return {user, token}
     } catch (e) {
       throw new Error(e)
     }
